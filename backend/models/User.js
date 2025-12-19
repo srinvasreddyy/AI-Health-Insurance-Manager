@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
-  email: { type: String, required: True, unique: True },
+  email: { type: String, required: true, unique: true },
+  password: { type: String }, // Required for email/pass auth
   name: String,
-  googleId: String, // For OAuth
+  googleId: String, 
   createdAt: { type: Date, default: Date.now }
 });
 
