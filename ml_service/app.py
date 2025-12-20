@@ -26,6 +26,10 @@ except FileNotFoundError as e:
 def health():
     return jsonify({'status': 'healthy', 'model_loaded': model is not None})
 
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({'message': 'Welcome to the ML Service API'})
+
 @app.route('/predict', methods=['POST'])
 def predict():
     if not model or not scaler:

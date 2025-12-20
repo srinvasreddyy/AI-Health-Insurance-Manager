@@ -12,7 +12,7 @@ const predictionRoutes = require('./routes/prediction');
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000' }));
+app.use(cors({ origin: [process.env.CLIENT_URL , 'http://localhost:3000','https://ai-health-insurance-manager-g1dl.vercel.app'] }));
 app.use(express.json());
 app.use(morgan('combined'));
 

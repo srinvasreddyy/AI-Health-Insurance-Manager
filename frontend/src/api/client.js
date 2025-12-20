@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const client = axios.create({
-  baseURL: 'http://localhost:5000/api', // Points to your Node.js backend
+  baseURL: 'https://ai-health-insurance-manager-6rgw.vercel.app/api', // Points to your Node.js backend
   headers: {
     'Content-Type': 'application/json',
   },
