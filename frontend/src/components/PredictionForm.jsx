@@ -2,17 +2,17 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
 import client from '../api/client';
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const PredictionForm = ({ onPredictionComplete }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(false);
-  const [result,Qr] = useState(null);
+  const [result, setResult] = useState(null); // Fixed typo here (was Qr)
 
   const onSubmit = async (data) => {
     setLoading(true);
-    setResult(null);
+    setResult(null); // This caused the error before
     try {
       // Convert string inputs to numbers/booleans as required by backend Joi schema
       const payload = {
