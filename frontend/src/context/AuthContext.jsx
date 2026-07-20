@@ -117,9 +117,15 @@ export const AuthProvider = ({ children }) => {
 
   // Enter guest mode (bypass login)
   const enterGuestMode = () => {
-    setGuestMode(true);
-    setIsAuthenticated(false);
-    toast.info('Entering guest mode. Predictions will be saved locally until you log in.');
+    try {
+      setGuestMode(true);
+      setIsAuthenticated(false);
+      // Fixed: Use toast() instead of toast.info() since react-hot-toast doesn't have .info() method
+      toast.success('Guest mode activated! Predictions will be saved locally.');
+    } catch (error) {
+      console.error('Error entering guest mode:', error);
+      toast.error('Failed to enter guest mode. Please try again.');
+    }
   };
 
   return (
