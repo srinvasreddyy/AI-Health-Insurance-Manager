@@ -5,6 +5,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 
 const authRoutes = require('./routes/auth');
 const predictionRoutes = require('./routes/prediction');
@@ -21,7 +22,9 @@ app.use(cors({
     'http://localhost:3000',
     'http://localhost:3001',
     'https://ai-health-insurance-manager-g1dl.vercel.app',
-    'https://ai-health-insurance-manager.vercel.app'
+    'https://ai-health-insurance-manager.vercel.app',
+    // Allow same-origin requests
+    '*'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -94,7 +97,23 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/prediction', predictionRoutes);
 
-// 404 handler
+// Serve static frontend files (for production)
+if (process.env.NODE_ENV === 'production') {
+  const frontendBuildPath = path.join(__dirname, '../frontend/dist');
+  app.use(express.static(frontendBuildPath));
+  
+  // Catch all route - serve index.html for client-side routing
+  app.get('*', (req, res) => {
+    // Don't serve index.html for API routes
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(frontendBuildPath, 'index.html'));
+    } else {
+      res.status(404).json({ message: 'Route not found' });
+    }
+  });
+}
+
+// 404 handler (for development and API routes)
 app.use((req, res) => {
   res.status(404).json({ message: 'Route not found' });
 });
@@ -151,6 +170,7 @@ const startServer = async () => {
     console.log(`✅ Server running on port ${PORT}`);
     console.log(`📧 Email service: ${process.env.EMAIL_USER ? 'Configured' : 'Not configured'}`);
     console.log(`🔐 JWT Secret: ${process.env.JWT_SECRET ? 'Configured' : 'Using default (CHANGE IN PRODUCTION)'}`);
+    console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 };
 
