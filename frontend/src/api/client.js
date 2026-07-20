@@ -1,7 +1,19 @@
 import axios from 'axios';
 
+// Get the backend URL from environment or construct it dynamically
+const getBackendURL = () => {
+  // For development
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5000/api';
+  }
+  
+  // For production - use relative path (same origin)
+  // This eliminates CORS issues entirely
+  return '/api';
+};
+
 const client = axios.create({
-  baseURL: 'https://ai-health-insurance-manager-6rgw.vercel.app/api', // Points to your Node.js backend
+  baseURL: getBackendURL(),
   headers: {
     'Content-Type': 'application/json',
   },
