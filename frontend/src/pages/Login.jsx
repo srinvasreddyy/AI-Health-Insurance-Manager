@@ -3,11 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { GoogleLogin } from '@react-oauth/google';
-import { Mail, Lock, ArrowRight, CheckCircle2, RotateCcw } from 'lucide-react';
+import { Mail, Lock, ArrowRight, CheckCircle2, RotateCcw, LogIn } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const Login = () => {
-  const { googleLogin, sendOtp, verifyOtp } = useAuth();
+  const { googleLogin, sendOtp, verifyOtp, enterGuestMode } = useAuth();
   const navigate = useNavigate();
   
   const [email, setEmail] = useState('');
@@ -64,11 +64,6 @@ const Login = () => {
       return;
     }
 
-    if (otp.length !== 6) {
-      toast.error('OTP must be 6 digits');
-      return;
-    }
-
     setLoading(true);
     const success = await verifyOtp(email, otp);
     setLoading(false);
@@ -98,6 +93,11 @@ const Login = () => {
     setResendCountdown(0);
   };
 
+  const handleGuestMode = () => {
+    enterGuestMode();
+    navigate('/dashboard');
+  };
+
   return (
     <div className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-8">
       <motion.div 
@@ -123,7 +123,6 @@ const Login = () => {
               onError={() => toast.error('Google login failed')}
               theme="filled_blue"
               shape="pill"
-              width="100%"
             />
           </motion.div>
         </div>
@@ -180,6 +179,18 @@ const Login = () => {
                 </>
               )}
             </motion.button>
+
+            {/* Guest Mode Button */}
+            <motion.button
+              type="button"
+              onClick={handleGuestMode}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-3 bg-slate-100 text-slate-900 font-semibold rounded-lg hover:bg-slate-200 transition-colors flex items-center justify-center gap-2 border border-slate-200"
+            >
+              <LogIn size={18} />
+              Continue as Guest
+            </motion.button>
           </form>
         ) : (
           // OTP Entry Step
@@ -211,7 +222,7 @@ const Login = () => {
                   type="text"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all bg-slate-50 text-center text-lg font-bold tracking-widest"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all bg-slate-50 text-center text-lg font-mono tracking-widest"
                   placeholder="000000"
                   maxLength={6}
                   required

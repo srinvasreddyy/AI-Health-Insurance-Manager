@@ -4,15 +4,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import client from '../api/client';
 import { Loader2, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const PredictionForm = ({ onPredictionComplete }) => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null); // Fixed typo here (was Qr)
+  const [result, setResult] = useState(null);
+  const { isAuthenticated, guestMode } = useAuth();
 
   const onSubmit = async (data) => {
     setLoading(true);
-    setResult(null); // This caused the error before
+    setResult(null);
     try {
       // Convert string inputs to numbers/booleans as required by backend Joi schema
       const payload = {
@@ -28,10 +30,25 @@ const PredictionForm = ({ onPredictionComplete }) => {
         NumberOfMajorSurgeries: Number(data.NumberOfMajorSurgeries)
       };
 
-      const response = await client.post('/prediction/predict', payload);
-      setResult(response.data);
-      if(onPredictionComplete) onPredictionComplete();
-      toast.success('Prediction successful!');
+      if (guestMode && !isAuthenticated) {
+        // Guest mode: create a local prediction object
+        const localPrediction = {
+          _id: Date.now().toString(),
+          inputs: payload,
+          predictedPrice: Math.floor(Math.random() * 200000) + 50000, // Mock price
+          timestamp: new Date().toISOString(),
+          isGuest: true
+        };
+        setResult(localPrediction);
+        if(onPredictionComplete) onPredictionComplete(localPrediction);
+        toast.success('Prediction saved locally! (Log in to sync)');
+      } else if (isAuthenticated) {
+        // Authenticated: send to backend
+        const response = await client.post('/prediction/predict', payload);
+        setResult(response.data);
+        if(onPredictionComplete) onPredictionComplete(response.data);
+        toast.success('Prediction successful!');
+      }
     } catch (error) {
       console.error(error);
       toast.error('Prediction failed. Please check your inputs.');
@@ -106,7 +123,7 @@ const PredictionForm = ({ onPredictionComplete }) => {
             type="submit"
             className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold text-lg shadow-lg hover:bg-slate-800 disabled:opacity-70 disabled:cursor-not-allowed flex justify-center items-center gap-2"
           >
-            {loading ? <Loader2 className="animate-spin" /> : <><CheckCircle size={20} /> Calculate Premium</>}
+            {loading ? <Loader2 className="animate-spin" /> : <><CheckCircle size={20} /> Calculate Premium</> }
           </motion.button>
         </form>
 
@@ -120,9 +137,9 @@ const PredictionForm = ({ onPredictionComplete }) => {
             >
               <h3 className="text-slate-600 font-medium uppercase tracking-wide text-xs mb-2">Estimated Premium</h3>
               <p className="text-4xl font-extrabold text-green-700">
-                ₹ {result.price.toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                ₹ {(result.price || result.predictedPrice).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
               </p>
-              <p className="text-sm text-green-600 mt-2">Annual estimation based on provided data.</p>
+              <p className="text-sm text-green-600 mt-2">{guestMode && !isAuthenticated ? 'Local prediction - log in to save permanently' : 'Annual estimation based on provided data.'}</p>
             </motion.div>
           )}
         </AnimatePresence>

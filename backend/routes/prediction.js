@@ -21,6 +21,8 @@ const predictionSchema = Joi.object({
   NumberOfMajorSurgeries: Joi.number().min(0).max(10).required()
 });
 
+// @route   POST /api/prediction/predict
+// @desc    Make a prediction (requires authentication)
 router.post('/predict', authMiddleware, async (req, res) => {
   try {
     // Validate inputs
@@ -52,6 +54,8 @@ router.post('/predict', authMiddleware, async (req, res) => {
   }
 });
 
+// @route   POST /api/prediction/feedback
+// @desc    Record feedback on a prediction (requires authentication)
 router.post('/feedback', authMiddleware, async (req, res) => {
   const { predictionId, isSatisfied } = req.body;
   try {
@@ -62,6 +66,8 @@ router.post('/feedback', authMiddleware, async (req, res) => {
   }
 });
 
+// @route   GET /api/prediction/history
+// @desc    Get prediction history for authenticated user
 router.get('/history', authMiddleware, async (req, res) => {
   try {
     const history = await Prediction.find({ userId: req.user.id }).sort({ timestamp: -1 });

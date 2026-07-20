@@ -7,9 +7,10 @@ import Dashboard from './pages/Dashboard';
 import { useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, guestMode, isAuthenticated } = useAuth();
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  if (!user) return <Navigate to="/login" />;
+  // Allow access if authenticated OR in guest mode
+  if (!user && !guestMode) return <Navigate to="/login" />;
   return children;
 };
 

@@ -8,6 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [guestMode, setGuestMode] = useState(false);
 
   // Validate token on app load
   useEffect(() => {
@@ -21,12 +22,14 @@ export const AuthProvider = ({ children }) => {
           });
           setUser(res.data.user);
           setIsAuthenticated(true);
+          setGuestMode(false);
         } catch (error) {
           // Token is invalid/expired, clear it
           console.log('Token validation failed, clearing storage');
           localStorage.removeItem('token');
           setUser(null);
           setIsAuthenticated(false);
+          setGuestMode(false);
         }
       }
       setLoading(false);
@@ -43,6 +46,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', res.data.token);
       setUser(res.data.user);
       setIsAuthenticated(true);
+      setGuestMode(false);
       toast.success('Successfully logged in with Google!');
       return true;
     } catch (error) {
@@ -92,6 +96,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', res.data.token);
       setUser(res.data.user);
       setIsAuthenticated(true);
+      setGuestMode(false);
       toast.success('Login successful!');
       return true;
     } catch (error) {
@@ -106,11 +111,29 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     setUser(null);
     setIsAuthenticated(false);
+    setGuestMode(false);
     toast.success('Logged out successfully');
   };
 
+  // Enter guest mode (bypass login)
+  const enterGuestMode = () => {
+    setGuestMode(true);
+    setIsAuthenticated(false);
+    toast.info('Entering guest mode. Predictions will be saved locally until you log in.');
+  };
+
   return (
-    <AuthContext.Provider value={{ user, googleLogin, sendOtp, verifyOtp, logout, loading, isAuthenticated }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      googleLogin, 
+      sendOtp, 
+      verifyOtp, 
+      logout, 
+      loading, 
+      isAuthenticated,
+      guestMode,
+      enterGuestMode
+    }}>
       {!loading && children}
     </AuthContext.Provider>
   );
